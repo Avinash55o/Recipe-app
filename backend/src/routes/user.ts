@@ -2,7 +2,7 @@ import express, { Request, Response } from "express";
 import zod from "zod";
 import jwt from "jsonwebtoken";
 import { PrismaClient } from "@prisma/client";
-import { request, response } from "express";
+
 
 const prisma = new PrismaClient();
 const router = express.Router();
@@ -26,7 +26,7 @@ router.post("/signup", async (req, res) => {
   const { success } = signupBody.safeParse(req.body);
   if (!success) {
     return res.status(411).json({
-      message: "sab galat likha h",
+      message: "input valuse are wrong",
     });
   }
 
@@ -36,7 +36,7 @@ router.post("/signup", async (req, res) => {
 
   if (existinguser) {
     return res.status(400).json({
-      message: "u already have an account",
+      message: "user is already exist",
     });
   }
 
@@ -58,7 +58,7 @@ router.post("/signup", async (req, res) => {
   );
 
   return res.status(200).json({token,
-    message: "ho gya signup",
+    message: "the user is signedup",
   });
 });
 
@@ -66,7 +66,7 @@ router.post("/login", async (req:Request, res:Response) => {
   const { success } = loginbody.safeParse(req.body);
   if (!success) {
     return res.status(400).json({
-      message: "kuch bhi!",
+      message: "input values is wrong",
     });
   }
 
@@ -74,7 +74,7 @@ router.post("/login", async (req:Request, res:Response) => {
     where: { userName: req.body.userName, password: req.body.password },
   });
   if (!existinguser) {
-    return res.status(200).json({ message: "not an user" });
+    return res.status(200).json({ message: "user is unknown" });
   }
 
   const token = jwt.sign(
@@ -84,15 +84,20 @@ router.post("/login", async (req:Request, res:Response) => {
     "arise"
   );
 
-  res.json({ token, username: existinguser.userName, message: "aa gaya" });
+  res.json({ token, username: existinguser.userName, message: "user is loggedin" });
 });
 
 //TO KNOW ALL THE USERS
 router.get("/allusers", async (req: any, res: any) => {
-  const allusers = await prisma.recipeUser.findMany({});
-  res.json(allusers);
-
-  res.status(200).json({ message: "sare users le" });
+  try {
+    const allusers = await prisma.recipeUser.findMany({});
+    res.json(allusers);
+  
+    res.status(200).json({ message: "all recipeUser" });
+  } catch (error) {
+    throw res.status(400).json({message:"there is an error in showing all the user",error:error})
+  }
+ 
 });
 
 //TO GET THE RECIPES OF THE USER
@@ -109,6 +114,7 @@ router.get("/recipes/:userName", async (req: Request, res: Response) => {
 
   return res.json({ recipes: allRecipes });
 });
+
 
 router.post("/saved-recipe", async (req: Request, res: Response) => {
   const { username } = req.body;
