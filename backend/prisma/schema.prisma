@@ -9,27 +9,27 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
 model recipeUser {
-  id           Int       @id @default(autoincrement())
-  userName     String    @unique
+  id           String     @id @map("_id") @default(auto()) @db.ObjectId
+  userName     String     @unique
   password     String
   firstName    String
   lastName     String
-  savedRecipes Int[]
-  recipes      recipes[]
+  savedRecipes String[]   @db.ObjectId
+  recipes      recipes[]  @relation("UserRecipes")
 }
 
 model recipes {
-  id          Int        @id @default(autoincrement())
-  owner       String
+  id          String     @id @map("_id") @default(auto()) @db.ObjectId
+  owner       String     @db.ObjectId
   Name        String     @unique
   Description String
   ingredients String
   imgurl      String
   cookingTime String
-  userOwner   recipeUser @relation(fields: [owner], references: [userName])
+  userOwner   recipeUser @relation("UserRecipes", fields: [owner], references: [id])
 }

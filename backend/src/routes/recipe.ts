@@ -49,10 +49,10 @@ router.post("/", async (req, res) => {
 
 
 router.put("/recipe", async (req: Request, res: Response) => {
-  const { recipeId, username } : {recipeId: number,username:string} = req.body;
+  const { recipeId, username } : {recipeId: string,username:string} = req.body;
 
   if (!recipeId || !username) {
-    return;
+    return res.status(400).json({message:"recepieId and username required"});
   }
 
   const recipe = await prisma.recipes.findUnique({
